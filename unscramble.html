@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+  <!-- Import jQuery http://api.jquery.com/jQuery.ajax/ -->
+ <script
+ src="https://code.jquery.com/jquery-2.2.4.min.js"
+ integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+ crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+// Input here with a scrambled word
+var anagram = "leppa";
+
+// helper function to take a word "leppa" alphabetizes to "aelpp"
+function alphabetize(word) {
+  // .split('') convert into array, .sort() alphabetizes the array, 
+  // .join puts it back into string
+  return word = word.split('').sort().join('');
+}
+
+// Grouping words together as a map since one alphebetized letters may map
+//  to multiple dictionary words
+function grouper(words){
+  // key | value pairs mapping alphebetized letters of words 
+  //  into array of anagram words
+  // if word is "leppa" > creates key "aelpp" : value ["appel", "apple", "pepla"]
+  const groups = {}; 
+  
+  // Note above words array passed in
+  //  loop over each word in words array
+  words.forEach((word) => {
+    // filter out words that are not right length 
+    if (word.length < 5 || word.length > 7) {
+      return; // exits
+    }
+
+    // call the helper function from earlier alphabetize(word)
+    // pass the current word that we are iterating over 
+    // ex) word = "leppa" > "aelpp" (having gone thru alphebetizing)
+    const alphabetizedLetters = alphabetize(word);
+
+    // check if obj[key] hasOwnProperty proceed
+    if(groups.hasOwnProperty(alphabetizedLetters)) {
+      // add dictionary word in the array under current alphabetizedLetters key
+      // Object's key "aelpp" : ["appel"]
+      // groups[alphabetizedLetters].push("apple") 
+      // Finally, "aelpp" : ["appel", "apple"]
+      return groups[alphabetizedLetters].push(word);
+    // obj[key] doesn't have the current obj key
+    } else {
+      // create key: alphabetizedLetters, value: [word] in array
+      groups[alphabetizedLetters] = [word];
+    }
+  });
+  // outputs groups hashtable
+  // "aelpp" : ["appel", "apple", "pepla"]
+  return groups;
+}
+
+// Using Ajax to retrieve the dictionary text file
+$.ajax ({
+  "type" : "GET",
+  "url" : "./dictionary.txt",
+  // if successfully fetched dictionary text file
+  "success" : function(resp){
+    // download dictionary text file > split into array of words
+    // CRLF for dictionary.text file has "\r\n" for line endings, with one word per line
+    var words = resp.split("\r\n");
+    // map the dictionary words in key value pair
+    var groups = grouper(words);
+    // alphabetizing current search word which is anagram
+    var alphabetizedAnagram = alphabetize(anagram);
+    // looking up current search word against library of alphabetized dictionary key 
+    var results = groups[alphabetizedAnagram];
+
+    console.log(results);
+  }
+});
+
+</script>
+</html>
